@@ -3,7 +3,7 @@
 ```
 Kentro (navegador do comercial)                Doca (este serviço, HTTPS)
 ┌───────────────────────────────┐ omni.http   ┌─────────────────────────────────┐
-│ Extensão: botão "Âncora" e    │────────────▶│ /api/kentro/ticket (com a chave)│
+│ Extensão: botão "Âncora" e    │────────────▶│ /api/kentro/ticket              │
 │ cartão do atendimento         │             │                                 │
 └──────────────┬────────────────┘             │ App React + server functions    │
     openEmbed  │ URL com ticket de uso único  │ Postgres do Doca                │
@@ -38,8 +38,7 @@ Variáveis (modelo em [.env.example](../.env.example)):
 |---|---|
 | `DATABASE_URL` | Do banco do Doca |
 | `URL_PUBLICA` | `https://kentro-ancora.kentro.com.br` |
-| `CHAVE_EXTENSAO` | Gere: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
-| `SEGREDO_SESSAO` | Gere outro valor com o mesmo comando |
+| `SEGREDO_SESSAO` | Gere: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 
 As tabelas são criadas na primeira subida. Confira em `GET /saude`: deve responder `{"ok":true,"banco":true}`.
 
@@ -48,8 +47,7 @@ As tabelas são criadas na primeira subida. Confira em `GET /saude`: deve respon
 Manifest: `https://kentro-ancora.kentro.com.br/extensao/atendimento/manifest.json`
 
 1. Em **Configurações › Extensões instaladas › Instalar por URL**, informe o manifest.
-2. Em **Chave de acesso**, cole o valor de `CHAVE_EXTENSAO`.
-3. Comece restrito ao usuário de teste (**Integração - Mateus, id 504**) e só depois abra ao comercial.
+2. Comece restrito ao usuário de teste (**Integração - Mateus, id 504**) e só depois abra ao comercial.
 
 Público definitivo (`userIds`, conferido em 04/11/2026 pelo campo Setor = Comercial):
 
@@ -86,7 +84,7 @@ Ficha já salva guarda o texto da época; ele só é refeito quando o plano é c
 
 ## Limites conhecidos
 
-- **Identidade:** o SDK da Kentro não dá prova assinada do usuário, e a chave da instalação chega ao navegador de quem recebe a extensão. Alguém com conhecimento técnico e essa chave poderia se passar por outro usuário e ver as fichas dele. Se a chave vazar, troque `CHAVE_EXTENSAO` e a chave da instalação.
+- **Sem autenticação na entrada (decisão de 04/11/2026):** `/api/kentro/ticket` é aberto e confia no usuário e no tipo informados. Quem conhecer o endereço pode, de qualquer lugar da internet, abrir uma sessão como qualquer usuário, inclusive master, e ler todas as fichas, com os dados e as transcrições dos clientes. Para fechar isso, seria preciso voltar a exigir uma chave nesse endereço.
 - **Transcrição:** fica guardada na ficha como referência (texto ou link). Ela não preenche as respostas.
 - **Links públicos:** quem tiver o UUID lê a proposta ou a conta ao vivo. Eles não expiram.
 

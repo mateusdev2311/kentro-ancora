@@ -16,8 +16,7 @@
   var acao = document.getElementById('acao');
 
   function mensagemDe(erro) {
-    if (erro && erro.message === 'config') return 'A extensão está sem o endereço ou a chave de acesso. Avise o suporte.';
-    if (erro && erro.code === 'forbidden') return 'O serviço recusou a chave de acesso. Avise o suporte.';
+    if (erro && erro.message === 'config') return 'A extensão está sem o endereço do serviço. Avise o suporte.';
     if (erro && erro.code === 'rate_limited') return 'Muitas tentativas seguidas. Aguarde um minuto.';
     return 'Não foi possível abrir o Método ÂNCORA. Tente de novo.';
   }
@@ -28,16 +27,15 @@
     try {
       var config = ctx.config || {};
       var apiUrl = String(config.api_url || '').trim().replace(/\/+$/, '');
-      var chave = String(config.chave_acesso || '').replace(/\s+/g, '');
-      if (!apiUrl || !chave) throw new Error('config');
+      if (!apiUrl) throw new Error('config');
       var usuario = await omni.session.getUser();
       var resposta = await omni.http.request({
         url: apiUrl + '/api/kentro/ticket',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Ancora-Chave': chave },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ usuario: { id: usuario.id, nome: usuario.name, email: usuario.email, tipo: usuario.type } })
       });
-      if (resposta.status >= 400) throw Object.assign(new Error('http'), { code: resposta.status === 401 ? 'forbidden' : 'http_error' });
+      if (resposta.status >= 400) throw new Error('http');
       await omni.ui.openEmbed({ url: JSON.parse(resposta.body).url, size: 'full', presentation: { mode: 'fullscreen' }, title: 'Método ÂNCORA' });
       msg.textContent = 'Aberto. Se fechar a janela do Método ÂNCORA, abra de novo por aqui.';
     } catch (erro) {

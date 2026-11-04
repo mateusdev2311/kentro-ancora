@@ -31,14 +31,13 @@
     try {
       var config = ctx.config || {};
       var apiUrl = String(config.api_url || '').trim().replace(/\/+$/, '');
-      var chave = String(config.chave_acesso || '').replace(/\s+/g, '');
-      if (!apiUrl || !chave) throw new Error('config');
+      if (!apiUrl) throw new Error('config');
       var usuario = await omni.session.getUser();
       var contato = await nomeDoContato();
       var resposta = await omni.http.request({
         url: apiUrl + '/api/kentro/ticket',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Ancora-Chave': chave },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           usuario: { id: usuario.id, nome: usuario.name, email: usuario.email, tipo: usuario.type },
           contexto: contato ? { contato_nome: contato } : {}
@@ -47,7 +46,7 @@
       if (resposta.status >= 400) throw new Error('http');
       await omni.ui.openEmbed({ url: JSON.parse(resposta.body).url, size: 'full', presentation: { mode: 'fullscreen' }, title: 'Método ÂNCORA' });
     } catch (erro) {
-      msg.textContent = erro && erro.message === 'config' ? 'A extensão está sem o endereço ou a chave de acesso.' : 'Não foi possível abrir. Tente de novo.';
+      msg.textContent = erro && erro.message === 'config' ? 'A extensão está sem o endereço do serviço.' : 'Não foi possível abrir. Tente de novo.';
     }
     acao.disabled = false;
   }

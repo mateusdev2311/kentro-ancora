@@ -28,19 +28,12 @@ function exigirVariavel(nome: string): string {
   return valor;
 }
 
-/** Chave colada na instalação da extensão. A comparação não vaza o conteúdo pelo tempo de resposta. */
-export function chaveExtensaoValida(chave: string | null | undefined): boolean {
-  const esperada = process.env['CHAVE_EXTENSAO']?.trim();
-  if (!esperada || !chave) return false;
-  return timingSafeEqual(sha256(chave.trim()), sha256(esperada));
-}
-
 /** Administrador e supervisor da Kentro veem todas as fichas; o restante, só as próprias. */
 export function papelDoTipo(tipo: number | null | undefined): Papel {
   return tipo === 0 || tipo === 1 || tipo === 98 || tipo === 99 ? 'master' : 'closer';
 }
 
-/** Cria o ticket de uso único que a extensão usa para abrir o app. Quem chega aqui já apresentou a chave. */
+/** Cria o ticket de uso único que a extensão usa para abrir o app. */
 export async function emitirTicket(kentro: UsuarioKentro, contexto: ContextoTicket = {}): Promise<string | null> {
   const sql = await banco();
   const id = String(kentro.id);

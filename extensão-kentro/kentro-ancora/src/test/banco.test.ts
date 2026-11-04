@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { iniciarBanco } from '../../scripts/banco-embutido.mjs';
 import { banco, encerrarBanco } from '@/lib/db.server';
 import {
-  assinarSessao, chaveExtensaoValida, emitirTicket, lerSessao, papelDoTipo, trocarTicket, usuarioDoCabecalho, type Usuario,
+  assinarSessao, emitirTicket, lerSessao, papelDoTipo, trocarTicket, usuarioDoCabecalho, type Usuario,
 } from '@/lib/sessao.server';
 import {
   atualizarContaAoVivo, atualizarFichaDoDono, contaAoVivoPublica, criarContaAoVivo, fichaDoCliente, inserirFicha, lerFicha, lerRascunho, listarMinhasFichas, listarTodasFichas, listarUsuarios, salvarRascunho, type NovaFicha,
@@ -44,7 +44,6 @@ beforeAll(async () => {
   const pg = await iniciarBanco({ porta, pasta });
   parar = pg.parar;
   vi.stubEnv('DATABASE_URL', pg.url);
-  vi.stubEnv('CHAVE_EXTENSAO', 'chave-certa');
   vi.stubEnv('SEGREDO_SESSAO', 'segredo-de-teste');
   await emitirTicket({ id: closerA.id, nome: 'A', tipo: 2 });
   await emitirTicket({ id: closerB.id, nome: 'B', tipo: 2 });
@@ -66,23 +65,6 @@ describe('migrações', () => {
     expect(linha?.n).toBe(2);
     const [geracoes] = await sql<{ existe: string | null }[]>`SELECT to_regclass('public.geracoes') AS existe`;
     expect(geracoes?.existe).toBeNull();
-  });
-});
-
-describe('chave da extensão', () => {
-  it('só aceita a chave configurada', () => {
-    expect(chaveExtensaoValida('chave-certa')).toBe(true);
-    expect(chaveExtensaoValida(' chave-certa ')).toBe(true);
-    expect(chaveExtensaoValida('errada')).toBe(false);
-    expect(chaveExtensaoValida('')).toBe(false);
-    expect(chaveExtensaoValida(null)).toBe(false);
-  });
-
-  it('sem a variável configurada, nada passa', () => {
-    vi.stubEnv('CHAVE_EXTENSAO', '');
-    expect(chaveExtensaoValida('')).toBe(false);
-    expect(chaveExtensaoValida('qualquer')).toBe(false);
-    vi.stubEnv('CHAVE_EXTENSAO', 'chave-certa');
   });
 });
 

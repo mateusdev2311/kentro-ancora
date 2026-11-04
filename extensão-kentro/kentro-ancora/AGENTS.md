@@ -5,7 +5,7 @@ Projeto saiu da Lovable e do Supabase em 04/11/2026: roda no Doca, com Postgres 
 - Use TanStack server functions for internal calls.
 - The closer package and client proposal are built in `src/lib/venda-textos.ts`, closing bullets in `closingBullets` (`src/lib/anchoring.ts`), both from the answers and the computed account: use only informed or calculated numbers, and anything missing reads "a confirmar". The client proposal never shows formulas, margin or negotiation conditions.
 - Transcripts are stored on the ficha only as reference (text or link); they never fill answers.
-- Access is by Kentro identity: the extension (`extension/atendimento`) calls `/api/kentro/ticket` with `CHAVE_EXTENSAO`, opens the app with `omni.ui.openEmbed`, and `/entrar` swaps the single-use ticket for a 12h Bearer session. There are no passwords and no cookies.
+- Access is by Kentro identity: the extension (`extension/atendimento`) calls `/api/kentro/ticket` (deliberately open, without a key, by the team's decision on 2026-11-04), opens the app with `omni.ui.openEmbed`, and `/entrar` swaps the single-use ticket for a 12h Bearer session. There are no passwords and no cookies.
 - Roles live in `usuarios.role`: Kentro admin/supervisor = master, agent = closer. Read them from the database on each request, never from the token or the client.
 - All ficha access rules live in `src/lib/fichas.server.ts` and are covered by `src/test/banco.test.ts`: closers read their own, masters read all, only the owner updates, and the public client link (/c/:id) reads an exact UUID and never returns the closer package, transcript or raw answers.
 - Migrations are in `src/lib/db-migracoes.server.ts`, applied on startup. Never edit a published one: add another.

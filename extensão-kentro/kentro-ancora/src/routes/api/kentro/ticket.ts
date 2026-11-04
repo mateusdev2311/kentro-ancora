@@ -12,13 +12,13 @@ const corpo = z.object({
 });
 const responder = (dados: unknown, status: number) => Response.json(dados, { status, headers: { 'Cache-Control': 'no-store' } });
 
-// Chamado pela extensão, pelo servidor da Kentro (omni.http.request). A chave fica na instalação da extensão.
+// Chamado pela extensão, pelo servidor da Kentro (omni.http.request).
+// Decisão do projeto (04/11/2026): sem chave de acesso. Este endereço é aberto e confia no usuário informado.
 export const Route = createFileRoute('/api/kentro/ticket')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { chaveExtensaoValida, emitirTicket, urlPublica } = await import('@/lib/sessao.server');
-        if (!chaveExtensaoValida(request.headers.get('x-ancora-chave'))) return responder({ erro: 'CHAVE_INVALIDA' }, 401);
+        const { emitirTicket, urlPublica } = await import('@/lib/sessao.server');
         const dados = corpo.safeParse(await request.json().catch(() => null));
         if (!dados.success) return responder({ erro: 'DADOS_INVALIDOS' }, 400);
         const ticket = await emitirTicket(dados.data.usuario, dados.data.contexto ?? {});

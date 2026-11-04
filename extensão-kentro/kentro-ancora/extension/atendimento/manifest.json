@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "kentrosistemas.ancora",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "Método ÂNCORA",
   "description": "Venda consultiva da Kentro: diagnóstico, conta ao vivo, planos, relatório de decisão e proposta para o cliente.",
   "author": { "name": "Kentro" },
@@ -15,13 +15,6 @@
       "help": "Já vem preenchido. Só altere se o suporte pedir.",
       "required": true,
       "default": "__URL_PUBLICA__"
-    },
-    {
-      "key": "chave_acesso",
-      "type": "secret",
-      "label": "Chave de acesso",
-      "help": "O valor da variável CHAVE_EXTENSAO do serviço no Doca.",
-      "required": true
     }
   ],
   "embedOrigins": ["__URL_PUBLICA__"],
