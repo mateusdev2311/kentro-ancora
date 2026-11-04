@@ -25,7 +25,7 @@ Crie o repositório e envie o projeto. `dist/`, `node_modules/` e `.env` ficam d
 | Campo | Valor |
 |---|---|
 | Tipo | API ou microsserviço |
-| Pasta do projeto | `.` |
+| Pasta do projeto | `extensão-kentro/kentro-ancora` (o repositório começa na pasta `Projetos`) |
 | Como construir | NestJS (`npm run build`, depois `dist/main.js`). O app não é Nest, mas o build gera esse arquivo |
 | Subdomínio | `kentro-ancora` (HTTPS obrigatório) |
 | Porta / verificação | 3000 / `GET /` |

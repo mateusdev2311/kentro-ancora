@@ -3,7 +3,8 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 
 export default defineConfig({
-  plugins: [react()],
+  // O vitest 4.0 traz o próprio vite 7; o tipo do plugin vem do vite 8 do app. O vitest 4.1 quebra o npm ci.
+  plugins: [react() as never],
   test: {
     environment: "jsdom",
     globals: true,

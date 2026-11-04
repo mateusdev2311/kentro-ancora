@@ -14,11 +14,7 @@
     "db:local": "node scripts/db-local.mjs",
     "imagens": "node scripts/baixar-imagens.mjs"
   },
-  "overrides": {
-    "rolldown": "1.2.1"
-  },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -75,6 +71,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^22.16.5",
@@ -94,7 +91,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "4.0.18"
   },
   "version": "0.1.0",
   "description": "Método ÂNCORA: venda consultiva Kentro, com extensão para a equipe comercial.",
