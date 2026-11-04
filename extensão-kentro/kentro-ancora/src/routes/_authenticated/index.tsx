@@ -22,6 +22,7 @@ import { AppNav } from '@/components/app-nav';
 import { PresentationMode } from '@/components/presentation-mode';
 import { atualizarConta, buscarRascunho, criarConta, guardarRascunho, limparRascunho } from '@/lib/fichas.functions';
 import { consumirContexto } from '@/lib/sessao-cliente';
+import { copiarTexto } from '@/lib/copiar';
 import { Question, TextField } from '@/components/ancora-question';
 import { AccountPanel } from '@/components/account-panel';
 import { AccountReport } from '@/components/account-report';
@@ -43,7 +44,7 @@ function Index(){
  const save=useServerFn(saveSale);const account=calculate(a);
  const clienteNome=typeof a['cliente_nome']==='string'?a['cliente_nome']:'';
  useEffect(()=>{if(!liveId)return;clearTimeout(liveTimer.current);liveTimer.current=setTimeout(()=>{void atualizarConta({data:{id:liveId,cliente_nome:clienteNome.slice(0,300),conta:JSON.stringify(account)}}).catch(()=>{/* a próxima alteração tenta de novo */});},800);return()=>clearTimeout(liveTimer.current);},[a,liveId]);// eslint-disable-line react-hooks/exhaustive-deps
- const shareLive=async()=>{setLiveMsg('');let id=liveId;if(!id){try{id=(await criarConta({data:{cliente_nome:clienteNome.slice(0,300),conta:JSON.stringify(account)}})).id;setLiveId(id);}catch{setLiveMsg('Não foi possível criar o link da conta ao vivo.');return;}}const url=`${window.location.origin}/conta/${id}`;try{await navigator.clipboard.writeText(url);setLiveMsg(`Link copiado: ${url}`);}catch{setLiveMsg(`Link da conta ao vivo: ${url}`);}};
+ const shareLive=async()=>{setLiveMsg('');let id=liveId;if(!id){try{id=(await criarConta({data:{cliente_nome:clienteNome.slice(0,300),conta:JSON.stringify(account)}})).id;setLiveId(id);}catch{setLiveMsg('Não foi possível criar o link da conta ao vivo.');return;}}const url=`${window.location.origin}/conta/${id}`;setLiveMsg(await copiarTexto(url)?`Link copiado: ${url}`:`Link da conta ao vivo: ${url}`);};
  useEffect(()=>{setOrigin(window.location.origin);void (async()=>{const {contato_nome}=consumirContexto();let inicial:Answers={};try{const r=await buscarRascunho();if(r){const d=JSON.parse(r) as {respostas:unknown;conta_ao_vivo_id:string|null};inicial=answerSchema.parse(d.respostas);if(d.conta_ao_vivo_id)setLiveId(d.conta_ao_vivo_id);}}catch{/* rascunho inválido é ignorado */}if(contato_nome&&!inicial['cliente_nome'])inicial={...inicial,cliente_nome:contato_nome.slice(0,300)};setA(inicial);setReady(true);})();},[]);
  useEffect(()=>{if(!ready)return;const t=setTimeout(()=>{void guardarRascunho({data:{respostas:a,conta_ao_vivo_id:liveId||null}}).catch(()=>{/* a próxima alteração tenta de novo */});},1500);return()=>clearTimeout(t);},[a,liveId,ready]);
  const anchorData=useMemo(()=>anchoringPayload(a,account),[a]);// eslint-disable-line react-hooks/exhaustive-deps

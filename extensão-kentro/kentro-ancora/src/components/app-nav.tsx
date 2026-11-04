@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ExternalLink, FileText, FolderOpen, Library } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BrandLogo } from './brand-logo';
+import { BotaoTelaCheia } from './tela-cheia';
 import { linkNovaAba } from '@/lib/fichas.functions';
 import type { Profile } from '@/routes/_authenticated/route';
 
@@ -25,6 +26,7 @@ export function AppNav({ profile }: { profile: Profile }) {
     {item('/', 'Ficha', FileText)}
     {item('/fichas', 'Minhas fichas', FolderOpen)}
     {profile.role === 'master' && item('/todas-fichas', 'Todas as fichas', Library)}
+    <BotaoTelaCheia />
     <Button variant="ghost" className="h-11" onClick={() => void abrirEmNovaAba()} title="Abrir em nova aba"><ExternalLink /><span className="sr-only">Abrir em nova aba</span></Button>
   </>;
 }

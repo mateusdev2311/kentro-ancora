@@ -134,7 +134,7 @@ export function ProposalDeck({ data, report, onClose }: { data: ProposalData; re
   useEffect(() => {
     setPrintReady(true);
     const k = (e: KeyboardEvent) => { if ((e.target as HTMLElement)?.closest('input,textarea,button')) return; if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); } if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); } if (e.key === 'Escape' && !document.fullscreenElement) { setFull(false); onClose?.(); } };
-    const f = () => setFull(!!document.fullscreenElement);
+    const f = () => setFull(!!root.current && document.fullscreenElement === root.current);
     window.addEventListener('keydown', k); document.addEventListener('fullscreenchange', f);
     return () => { window.removeEventListener('keydown', k); document.removeEventListener('fullscreenchange', f); };
   }, [go, onClose]);

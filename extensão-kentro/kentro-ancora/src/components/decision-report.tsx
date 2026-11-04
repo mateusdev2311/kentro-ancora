@@ -15,10 +15,11 @@ export function DecisionReport({ r, cliente, onClose, autoFullscreen }: { r: Rep
   const prev = useCallback(() => setN(x => Math.max(x - 1, 0)), []);
   const full = useCallback(() => { void ref.current?.requestFullscreen?.().catch(() => {}); }, []);
   useEffect(() => {
+    const el = ref.current;
     if (autoFullscreen) full();
     const key = (e: KeyboardEvent) => { if ((e.target as HTMLElement).closest('input,textarea')) return; if (['ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); } if (['ArrowLeft', 'PageUp'].includes(e.key)) prev(); if (e.key === 'Escape') onClose?.(); };
     window.addEventListener('keydown', key);
-    return () => { window.removeEventListener('keydown', key); if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); };
+    return () => { window.removeEventListener('keydown', key); if (el && document.fullscreenElement === el) void document.exitFullscreen().catch(() => {}); };
   }, [next, prev, onClose, autoFullscreen, full]);
   const lossShown = r.cenario_prudente > 0 ? r.cenario_prudente : r.ganho_mensal;
   return <div ref={ref} className="report-stage" aria-roledescription="apresentação" aria-label="Relatório de decisão"

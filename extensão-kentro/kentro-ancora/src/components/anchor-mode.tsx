@@ -36,10 +36,11 @@ export function AnchorMode({ data, onClose, cliente }: { data: AnchorData; onClo
   const next = useCallback(() => setN(x => Math.min(x + 1, slides.length - 1)), [slides.length]);
   const prev = useCallback(() => setN(x => Math.max(x - 1, 0)), []);
   useEffect(() => {
-    if (onClose) ref.current?.requestFullscreen?.().catch(() => { /* opcional */ });
+    const el = ref.current;
+    if (onClose) el?.requestFullscreen?.().catch(() => { /* opcional */ });
     const key = (e: KeyboardEvent) => { if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); next(); } if (['ArrowLeft', 'PageUp'].includes(e.key)) prev(); if (e.key === 'Escape') onClose?.(); };
     window.addEventListener('keydown', key);
-    return () => { window.removeEventListener('keydown', key); if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); };
+    return () => { window.removeEventListener('keydown', key); if (el && document.fullscreenElement === el) void document.exitFullscreen().catch(() => {}); };
   }, [next, prev, onClose]);
   if (!cur) return null;
   const sectionSlides = slides.filter(s => s.section === cur.section); const upto = slides.slice(0, n + 1).filter(s => s.section === cur.section);

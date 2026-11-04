@@ -73,7 +73,9 @@ Na Kentro, com o usuário de teste:
 2. Preencha uma ficha de teste e recarregue: o rascunho volta.
 3. Clique em **Gerar venda ancorada** e abra o link do cliente numa janela anônima.
 4. Escolha um plano e gere a proposta.
-5. Dentro do diálogo, teste **Baixar PDF**, **Apresentar** (tela cheia) e copiar link. Se a Kentro bloquear algum, use o botão de **nova aba** (seta no topo): a aba abre conectada e sem essas limitações.
+5. Dentro do diálogo, teste **Baixar PDF**, **Apresentar** e copiar link. Se a Kentro bloquear algum, use o botão de **nova aba** (seta no topo): a aba abre conectada e sem essas limitações.
+
+**Tamanho da tela:** a Kentro sempre abre página externa num diálogo (`omni.ui.openEmbed`), mesmo no modo `fullscreen`. O app não pode mudar isso nem abrir maior sozinho. O botão de **tela cheia** no topo do app leva tudo ao monitor inteiro, mas depende de um clique do usuário, por regra do navegador.
 6. Abra um atendimento e use o cartão **Abrir ficha ÂNCORA**: numa ficha vazia, o nome do contato já vem preenchido.
 
 ## Manter os textos da venda
