@@ -1,0 +1,17 @@
+# Método ÂNCORA
+- [x] Adicionar estados e resposta aberta a todas as perguntas e interpretar números claros.
+- [x] Importar transcrição por texto/link, revisar e guardar contexto original.
+- [x] Verificar cálculos, importação e gravação/reabertura.
+- [x] Preservar identidade e captura; criar oito etapas opcionais.
+- [x] Implementar e testar as oito alavancas e painel ao vivo.
+- [x] Integrar IA com prompt exato, duas saídas e tratamento de erros.
+- [x] Salvar fichas, leitura pública por UUID e lista local de fichas.
+- [x] Verificar geração, gravação, reabertura e visual mobile.- [x] Login com papéis master/closer, troca de senha obrigatória e gestão de usuários.
+- [x] Perguntas em tom natural com o porquê.
+- [x] Conta ao vivo nos relatórios, modo apresentação e link compartilhável.
+- [x] Privacidade do link: ficha completa só logado; link público do cliente.
+- [x] Ancoragem ao vivo em 5 passos com bullets da IA.
+- [x] Tela dos 4 planos com motor de preços e plano salvo na ficha.
+- [x] Proposta a partir do plano escolhido.
+- [x] Substituir visual e conteúdo da proposta pelas páginas comerciais do arquivo enviado.
+- [x] Incluir ancoragem da ficha e validar impressão A4 sem cortes ou páginas extras.

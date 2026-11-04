@@ -1,0 +1,53 @@
+<!-- Botão do menu do topo. Identifica o usuário, pede um ticket ao serviço e abre o app no diálogo da Kentro. -->
+<style>
+  #app { font: 14px/1.5 system-ui, sans-serif; padding: 16px; }
+  #acao { margin-top: 12px; padding: 8px 14px; border: 0; border-radius: 8px; background: #5b2a86; color: #fff; font: inherit; cursor: pointer; }
+  [hidden] { display: none; }
+</style>
+<div id="app">
+  <p id="msg" role="status">Abrindo o Método ÂNCORA…</p>
+  <button id="acao" type="button" hidden>Abrir de novo</button>
+</div>
+<script>
+(function () {
+  var omni = globalThis.omni;
+  var msg = document.getElementById('msg');
+  var acao = document.getElementById('acao');
+
+  function mensagemDe(erro) {
+    if (erro && erro.message === 'config') return 'A extensão está sem o endereço ou a chave de acesso. Avise o suporte.';
+    if (erro && erro.code === 'forbidden') return 'O serviço recusou a chave de acesso. Avise o suporte.';
+    if (erro && erro.code === 'rate_limited') return 'Muitas tentativas seguidas. Aguarde um minuto.';
+    return 'Não foi possível abrir o Método ÂNCORA. Tente de novo.';
+  }
+
+  async function abrir(ctx) {
+    acao.hidden = true;
+    msg.textContent = 'Abrindo o Método ÂNCORA…';
+    try {
+      var config = ctx.config || {};
+      var apiUrl = String(config.api_url || '').trim().replace(/\/+$/, '');
+      var chave = String(config.chave_acesso || '').replace(/\s+/g, '');
+      if (!apiUrl || !chave) throw new Error('config');
+      var usuario = await omni.session.getUser();
+      var resposta = await omni.http.request({
+        url: apiUrl + '/api/kentro/ticket',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Ancora-Chave': chave },
+        body: JSON.stringify({ usuario: { id: usuario.id, nome: usuario.name, email: usuario.email, tipo: usuario.type } })
+      });
+      if (resposta.status >= 400) throw Object.assign(new Error('http'), { code: resposta.status === 401 ? 'forbidden' : 'http_error' });
+      await omni.ui.openEmbed({ url: JSON.parse(resposta.body).url, size: 'full', presentation: { mode: 'fullscreen' }, title: 'Método ÂNCORA' });
+      msg.textContent = 'Aberto. Se fechar a janela do Método ÂNCORA, abra de novo por aqui.';
+    } catch (erro) {
+      msg.textContent = mensagemDe(erro);
+    }
+    acao.hidden = false;
+  }
+
+  omni.ready(function (ctx) {
+    acao.addEventListener('click', function () { abrir(ctx || {}); });
+    abrir(ctx || {});
+  });
+})();
+</script>

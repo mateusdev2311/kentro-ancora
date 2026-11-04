@@ -1,0 +1,60 @@
+<!-- Cartão do atendimento. Abre o app com o nome do contato selecionado, para começar a ficha. -->
+<style>
+  #app { font: 13px/1.5 system-ui, sans-serif; padding: 12px; }
+  #acao { width: 100%; padding: 9px 12px; border: 0; border-radius: 8px; background: #5b2a86; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  #acao:disabled { opacity: .6; cursor: default; }
+  #msg { margin: 8px 0 0; }
+  #msg:empty { display: none; }
+</style>
+<div id="app">
+  <button id="acao" type="button">Abrir ficha ÂNCORA</button>
+  <p id="msg" role="status"></p>
+</div>
+<script>
+(function () {
+  var omni = globalThis.omni;
+  var msg = document.getElementById('msg');
+  var acao = document.getElementById('acao');
+
+  async function nomeDoContato() {
+    try {
+      var atendimento = await omni.chats.getSelected();
+      return atendimento && atendimento.contact && atendimento.contact.name ? String(atendimento.contact.name).slice(0, 300) : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  async function abrir(ctx) {
+    acao.disabled = true;
+    msg.textContent = '';
+    try {
+      var config = ctx.config || {};
+      var apiUrl = String(config.api_url || '').trim().replace(/\/+$/, '');
+      var chave = String(config.chave_acesso || '').replace(/\s+/g, '');
+      if (!apiUrl || !chave) throw new Error('config');
+      var usuario = await omni.session.getUser();
+      var contato = await nomeDoContato();
+      var resposta = await omni.http.request({
+        url: apiUrl + '/api/kentro/ticket',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Ancora-Chave': chave },
+        body: JSON.stringify({
+          usuario: { id: usuario.id, nome: usuario.name, email: usuario.email, tipo: usuario.type },
+          contexto: contato ? { contato_nome: contato } : {}
+        })
+      });
+      if (resposta.status >= 400) throw new Error('http');
+      await omni.ui.openEmbed({ url: JSON.parse(resposta.body).url, size: 'full', presentation: { mode: 'fullscreen' }, title: 'Método ÂNCORA' });
+    } catch (erro) {
+      msg.textContent = erro && erro.message === 'config' ? 'A extensão está sem o endereço ou a chave de acesso.' : 'Não foi possível abrir. Tente de novo.';
+    }
+    acao.disabled = false;
+  }
+
+  omni.ready(function (ctx) {
+    acao.addEventListener('click', function () { abrir(ctx || {}); });
+    if (omni.ui && omni.ui.resize) omni.ui.resize(document.body.scrollHeight + 16).catch(function () {});
+  });
+})();
+</script>
