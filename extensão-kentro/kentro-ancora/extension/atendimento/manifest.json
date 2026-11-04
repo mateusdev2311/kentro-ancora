@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "kentrosistemas.ancora",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "Método ÂNCORA",
   "description": "Venda consultiva da Kentro: diagnóstico, conta ao vivo, planos, relatório de decisão e proposta para o cliente.",
   "author": { "name": "Kentro" },
@@ -32,7 +32,7 @@
       "title": "Âncora",
       "url": "abrir.html",
       "icon": "icone.svg",
-      "presentation": { "mode": "dialog", "size": "sm" }
+      "presentation": { "mode": "fullscreen" }
     },
     {
       "id": "painel",
