@@ -40,7 +40,7 @@ export function DecisionReport({ r, cliente, onClose, autoFullscreen }: { r: Rep
         <div className="report-price"><p className="report-label">O Kentro custa</p><strong>{money(r.mensalidade)}</strong><p className="why">/mês · {r.plano}</p>
           <p className="report-label mt-4">Múltiplo</p><strong>{decimal(r.multiplo)}{r.multiplo !== null ? '×' : ''}</strong><PaybackBadge r={r} /></div>
         <div className="report-gauge"><MultipleGauge multiplo={r.multiplo} /></div></div>}
-      {n === 4 && <div className="report-split"><div>{r.bullets_fechamento.length ? <ul className="report-bullets">{r.bullets_fechamento.map(b => <li key={b}>{b}</li>)}</ul> : <p className="report-muted">Motivos de fechamento a gerar com a IA.</p>}
+      {n === 4 && <div className="report-split"><div>{r.bullets_fechamento.length ? <ul className="report-bullets">{r.bullets_fechamento.map(b => <li key={b}>{b}</li>)}</ul> : <p className="report-muted">Motivos de fechamento a confirmar: faltam dados na ficha.</p>}
         <p className="report-next">Próximo passo: <strong>{r.proximo_passo}</strong></p></div><div className="report-chart"><LeakDiagram r={r} /></div></div>}
     </section>
     <div className="report-nav"><Button variant="outline" className="anchor-btn" onClick={prev} disabled={n === 0} aria-label="Anterior"><ChevronLeft /></Button>

@@ -2,6 +2,7 @@
 // Regras de acesso e sessão num Postgres real. Elas substituem as políticas de RLS do Supabase.
 import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
+import { createServer, type AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -14,7 +15,6 @@ import {
 import {
   atualizarContaAoVivo, atualizarFichaDoDono, contaAoVivoPublica, criarContaAoVivo, fichaDoCliente, inserirFicha, lerFicha, lerRascunho, listarMinhasFichas, listarTodasFichas, listarUsuarios, salvarRascunho, type NovaFicha,
 } from '@/lib/fichas.server';
-import { consultarGeracao, iniciarGeracao } from '@/lib/geracoes.server';
 
 const usuario = (id: string, role: 'closer' | 'master'): Usuario => ({ id, nome: id, email: '', role, ativo: true });
 const closerA = usuario('101', 'closer');
@@ -32,7 +32,16 @@ let pasta: string;
 
 beforeAll(async () => {
   pasta = mkdtempSync(join(tmpdir(), 'ancora-teste-'));
-  const pg = await iniciarBanco({ porta: 54369, pasta });
+  // Porta livre a cada execução: no Windows, um processo do Postgres anterior pode segurar a porta depois de parar.
+  const porta = await new Promise<number>((resolver, rejeitar) => {
+    const servidor = createServer();
+    servidor.once('error', rejeitar);
+    servidor.listen(0, '127.0.0.1', () => {
+      const endereco = servidor.address() as AddressInfo;
+      servidor.close(() => resolver(endereco.port));
+    });
+  });
+  const pg = await iniciarBanco({ porta, pasta });
   parar = pg.parar;
   vi.stubEnv('DATABASE_URL', pg.url);
   vi.stubEnv('CHAVE_EXTENSAO', 'chave-certa');
@@ -54,7 +63,9 @@ describe('migrações', () => {
     await encerrarBanco();
     const sql = await banco();
     const [linha] = await sql<{ n: number }[]>`SELECT count(*)::int AS n FROM _migracoes`;
-    expect(linha?.n).toBe(1);
+    expect(linha?.n).toBe(2);
+    const [geracoes] = await sql<{ existe: string | null }[]>`SELECT to_regclass('public.geracoes') AS existe`;
+    expect(geracoes?.existe).toBeNull();
   });
 });
 
@@ -164,12 +175,12 @@ describe('fichas', () => {
   it('só o dono altera o plano, nem o master', async () => {
     const id = randomUUID();
     await inserirFicha(closerA, novaFicha(id));
-    const dados = { plano: { nome: 'Start' }, ancoragem: {}, proposta_gerada: true, relatorio_dados: {} };
+    const dados = { pacote_closer: 'novo pacote', proposta_cliente: 'nova proposta', plano: { nome: 'Start' }, ancoragem: {}, proposta_gerada: true, relatorio_dados: {} };
     expect(await atualizarFichaDoDono(closerB, id, dados)).toBe(false);
     expect(await atualizarFichaDoDono(master, id, dados)).toBe(false);
     expect((await lerFicha(closerA, id))?.['proposta_gerada']).toBe(false);
     expect(await atualizarFichaDoDono(closerA, id, dados)).toBe(true);
-    expect((await lerFicha(closerA, id))?.['proposta_gerada']).toBe(true);
+    expect(await lerFicha(closerA, id)).toMatchObject({ proposta_gerada: true, proposta_cliente: 'nova proposta', pacote_closer: 'novo pacote' });
   });
 
   it('o link público nunca devolve respostas, transcrição nem pacote do closer', async () => {
@@ -205,38 +216,5 @@ describe('conta ao vivo e rascunho', () => {
     await salvarRascunho(closerB, { cliente_nome: 'de B' }, contaDeA);
     expect(await lerRascunho(closerA)).toMatchObject({ respostas: { cliente_nome: 'de A' }, conta_ao_vivo_id: contaDeA });
     expect(await lerRascunho(closerB)).toMatchObject({ respostas: { cliente_nome: 'de B' }, conta_ao_vivo_id: null });
-  });
-});
-
-describe('geração em segundo plano', () => {
-  const concluir = async (usuarioId: string, id: string) => {
-    await vi.waitFor(async () => {
-      expect((await consultarGeracao(usuarioId, id))?.status).not.toBe('processando');
-    });
-    return consultarGeracao(usuarioId, id);
-  };
-
-  it('guarda o resultado, e só o dono consulta', async () => {
-    const { id } = await iniciarGeracao(closerA.id, 'venda', async () => ({ ok: true, texto: 'pronto' }));
-    expect(await concluir(closerA.id, id)).toEqual({ status: 'concluida', resultado: { ok: true, texto: 'pronto' } });
-    expect(await consultarGeracao(closerB.id, id)).toBeNull();
-  });
-
-  it('uma falha inesperada vira erro legível', async () => {
-    const erroLog = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { id } = await iniciarGeracao(closerA.id, 'venda', async () => { throw new Error('detalhe interno'); });
-    const resposta = await concluir(closerA.id, id);
-    expect(resposta?.status).toBe('erro');
-    expect(JSON.stringify(resposta)).not.toContain('detalhe interno');
-    erroLog.mockRestore();
-  });
-
-  it('uma geração interrompida vence depois do limite', async () => {
-    let liberar = () => {};
-    const { id } = await iniciarGeracao(closerA.id, 'venda', () => new Promise((r) => { liberar = () => r({ ok: true }); }));
-    const sql = await banco();
-    await sql`UPDATE geracoes SET created_at = now() - interval '16 minutes' WHERE id = ${id}`;
-    expect((await consultarGeracao(closerA.id, id))?.status).toBe('erro');
-    liberar();
   });
 });

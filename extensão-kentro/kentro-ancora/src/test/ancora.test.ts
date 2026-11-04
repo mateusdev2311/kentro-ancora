@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { calculate,splitOutput,SEPARATOR } from '@/lib/ancora';
+import { calculate } from '@/lib/ancora';
 describe('Conta ÂNCORA',()=>{
  it('leads: 13 × 30% × ticket de 300',()=>expect(calculate({ticket:'R$101–500',al1:'6 a 20'}).ganho).toBe(1170));
  it('orçamentos: 35 × 30% × ticket de 750',()=>expect(calculate({ticket:'R$501–1.000',al2:'21 a 50'}).ganho).toBe(7875));
@@ -16,5 +16,4 @@ describe('Conta ÂNCORA',()=>{
  it('campos vazios e Não sabe não inventam dados',()=>{const c=calculate({al1:'Não sabe'});expect(c.alavancas[0]?.valor).toBeNull();expect(c.ticket).toBeNull();expect(c.multiplo).toBeNull();});
  it('sem agenda e sem base valem zero',()=>{const c=calculate({al3:'Não vivo de agenda',al4:'Não tenho base'});expect(c.alavancas[2]?.valor).toBe(0);expect(c.alavancas[3]?.valor).toBe(0);});
  it('horas são devolvidas em 22 dias úteis',()=>expect((calculate({al6:'3–5h'}).horas??0)*22).toBe(88));
- it('separa os dois resultados e rejeita saída incompleta',()=>{expect(splitOutput(`interno\n${SEPARATOR}\ncliente`)).toEqual({pacote_closer:'interno',proposta_cliente:'cliente'});expect(()=>splitOutput('incompleto')).toThrow();});
 });

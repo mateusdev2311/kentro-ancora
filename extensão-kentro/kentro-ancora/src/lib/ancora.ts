@@ -87,10 +87,3 @@ export type Ficha = { id:string; created_at:string; closer_nome:string; cliente_
 export const fichaSchema = z.object({id:z.string().uuid(),created_at:z.string(),closer_nome:z.string(),cliente_nome:z.string(),segmento:z.string(),cidade:z.string(),transcricao:z.string().default(''),respostas:answerSchema,conta:z.object({ganho:z.number(),prudente:z.number(),multiplo:z.number().nullable(),payback:z.number().nullable(),ticket:z.number().nullable(),horario:z.number().nullable(),mensalidade:z.number().nullable(),implantacao:z.number().nullable(),parcial:z.boolean(),alavancas:z.array(z.object({nome:z.string(),resposta:z.union([z.string(),z.array(z.string())]),estado:z.string().optional(),valor:z.number().nullable(),soma:z.boolean(),conta:z.string().optional()})),midia:z.number().nullable(),horas:z.number().nullable()}),pacote_closer:z.string(),proposta_cliente:z.string()});
 export const money = (n: number | null) => n === null ? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 export const decimal = (n:number | null) => n === null ? '—' : n.toLocaleString('pt-BR',{maximumFractionDigits:1});
-export const SEPARATOR = '=== PROPOSTA PARA O CLIENTE ===';
-export function splitOutput(text:string) {
- const i=text.indexOf(SEPARATOR); if(i<0) throw new Error('A IA não retornou os dois blocos esperados.');
- const pacote_closer=text.slice(0,i).trim(); const proposta_cliente=text.slice(i+SEPARATOR.length).trim();
- if(!pacote_closer || !proposta_cliente) throw new Error('A IA retornou um dos blocos vazio.');
- return {pacote_closer,proposta_cliente};
-}

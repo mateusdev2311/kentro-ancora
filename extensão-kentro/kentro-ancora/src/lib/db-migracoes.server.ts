@@ -71,4 +71,6 @@ CREATE TABLE geracoes (
 CREATE INDEX geracoes_created_idx ON geracoes (created_at);
 `,
   },
+  // A IA saiu do produto: os textos da venda são montados direto da ficha.
+  { id: '0002_remove_geracoes', sql: 'DROP TABLE IF EXISTS geracoes;' },
 ];

@@ -1,11 +1,10 @@
 import { z } from 'zod';
 import type { Answers } from './ficha';
 import type { Account } from './ancora';
-import { bulletsOf, chosenPlan, clientFacts, defaultUsers, planValues } from './anchoring';
+import { chosenPlan, clientFacts, closingBullets, defaultUsers, planValues } from './anchoring';
 
 export const NEXT_STEP = 'assinatura + kickoff nesta semana';
 export const HEALTHY_MULTIPLE = 5;
-export const REPORT_SEPARATOR = '=== DADOS DO RELATÓRIO (JSON) ===';
 
 /** O que o Kentro faz para tampar cada vazamento (por alavanca que soma). */
 export const LEAK_FIX: Record<string, { vazamento: string; tampa: string }> = {
@@ -44,25 +43,10 @@ export function buildReport(a: Answers, conta: ReportAccount): ReportData {
     perda_por_alavanca: somam.map(l => ({ alavanca: l.nome, valor: l.valor, conta: l.conta ?? '', resposta: l.estado === 'não informado' ? '' : text(l.resposta) })),
     projecao_12m: Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, perda_acumulada: r2(ganho * (i + 1)), custo_acumulado: r2(implantacao + mensalidade * (i + 1)) })),
     ganho_mensal: r2(ganho), cenario_prudente: r2(conta.prudente), multiplo, payback_dias: payback,
-    bullets_fechamento: bulletsOf(a), mensalidade, implantacao, plano: plan,
+    bullets_fechamento: closingBullets(a, { prudente: conta.prudente, multiplo, payback }), mensalidade, implantacao, plano: plan,
     fatos: clientFacts(a), a_confirmar: somam.filter(l => l.valor === null).map(l => l.nome),
     proximo_passo: NEXT_STEP, parcial: conta.parcial,
   };
-}
-
-/** Separa o bloco JSON da IA (se existir) do texto. */
-export function extractReportBlock(output: string): { text: string; json: unknown } {
-  const i = output.indexOf(REPORT_SEPARATOR); if (i < 0) return { text: output, json: null };
-  const raw = output.slice(i + REPORT_SEPARATOR.length).replace(/```(?:json)?/g, '').trim();
-  let json: unknown = null; try { const s = raw.indexOf('{'), e = raw.lastIndexOf('}'); json = s >= 0 ? JSON.parse(raw.slice(s, e + 1)) : null; } catch { json = null; }
-  return { text: output.slice(0, i).trim(), json };
-}
-
-/** Números sempre da conta do app (nunca inventados); da IA aproveitamos os bullets. */
-export function mergeReport(ai: unknown, base: ReportData): ReportData {
-  const p = z.object({ bullets_fechamento: z.array(z.string().max(280)).max(5) }).partial().safeParse(ai);
-  const bullets = p.success && p.data.bullets_fechamento?.length ? p.data.bullets_fechamento.map(b => b.trim()).filter(Boolean) : [];
-  return { ...base, bullets_fechamento: base.bullets_fechamento.length ? base.bullets_fechamento : bullets };
 }
 
 /** Lê o relatório salvo; se faltar ou vier quebrado, devolve null para o app recalcular. */

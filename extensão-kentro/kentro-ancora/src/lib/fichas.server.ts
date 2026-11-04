@@ -73,11 +73,11 @@ export async function listarUsuarios(usuario: Usuario) {
   return [...linhas];
 }
 
-/** Plano e proposta depois de salva a ficha. Só o dono altera (master lê, mas não edita a ficha de outro). */
-export async function atualizarFichaDoDono(usuario: Usuario, id: string, d: { plano: Json; ancoragem: Json; proposta_gerada: boolean; relatorio_dados: Json }): Promise<boolean> {
+/** Plano, proposta e textos depois de salva a ficha. Só o dono altera (master lê, mas não edita a ficha de outro). */
+export async function atualizarFichaDoDono(usuario: Usuario, id: string, d: { pacote_closer: string; proposta_cliente: string; plano: Json; ancoragem: Json; proposta_gerada: boolean; relatorio_dados: Json }): Promise<boolean> {
   const sql = await banco();
   const r = await sql`
-    UPDATE fichas SET plano = ${sql.json(d.plano)}, ancoragem = ${sql.json(d.ancoragem)}, proposta_gerada = ${d.proposta_gerada}, relatorio_dados = ${sql.json(d.relatorio_dados)}
+    UPDATE fichas SET pacote_closer = ${d.pacote_closer}, proposta_cliente = ${d.proposta_cliente}, plano = ${sql.json(d.plano)}, ancoragem = ${sql.json(d.ancoragem)}, proposta_gerada = ${d.proposta_gerada}, relatorio_dados = ${sql.json(d.relatorio_dados)}
     WHERE id = ${id} AND user_id = ${usuario.id}`;
   return r.count === 1;
 }

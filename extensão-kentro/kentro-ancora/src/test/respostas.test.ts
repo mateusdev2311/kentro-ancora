@@ -1,9 +1,7 @@
 import { describe,it,expect } from 'vitest';
 import { calculate } from '@/lib/ancora';
 import { OPEN, UNANSWERED, answerState,parseOpenNumber } from '@/lib/answer-state';
-import { applyExtraction,generationAnswers } from '@/lib/transcript';
-import { allowedTranscriptUrl } from '@/lib/transcript-link';
-describe('Respostas e transcrição',()=>{
+describe('Respostas',()=>{
  it('usa número aberto claro em leads e ticket',()=>expect(calculate({al1:OPEN,al1_aberto:'Perdemos cerca de 12 contatos por mês',ticket:OPEN,ticket_aberto:'R$ 250,00'}).ganho).toBe(900));
  it('usa faltas abertas e valor exato do horário',()=>expect(calculate({al3:OPEN,al3_aberto:'8 faltas',horario:OPEN,horario_aberto:'R$ 150,50'}).ganho).toBe(602));
  it('usa retornos e ferramentas abertos',()=>expect(calculate({al4:OPEN,al4_aberto:'10 retornos',ticket:'Até R$100',al7:OPEN,al7_aberto:'R$ 450 por mês'}).ganho).toBe(950));
@@ -12,9 +10,5 @@ describe('Respostas e transcrição',()=>{
  it('texto sem número permanece contexto',()=>{const c=calculate({al1:OPEN,al1_aberto:'Não conseguimos acompanhar',ticket:'Até R$100'});expect(c.alavancas[0]?.valor).toBeNull();expect(c.alavancas[0]?.resposta).toBe('Não conseguimos acompanhar');});
  it('não converte faixas, múltiplas quantidades ou negativos',()=>{for(const s of ['10 a 20','entre 10 e 20','-3','5 por dia, 100 por mês','30%','mais de 50'])expect(parseOpenNumber(s)).toBeNull();});
  it('lê reais pt-BR e mil',()=>{expect(parseOpenNumber('R$ 1.234,56')).toBe(1234.56);expect(parseOpenNumber('cerca de 2 mil reais')).toBe(2000);});
- it('null importado marca não respondido e mantém opção válida',()=>{const a=applyExtraction({L:'Até 50',al1:{aberto:'12 contatos'},cnpj:null});expect(a['L']).toBe('Até 50');expect(a['al1']).toBe(OPEN);expect(a['al1_aberto']).toBe('12 contatos');expect(a['cnpj']).toBe(UNANSWERED);expect(a['site']).toBe(UNANSWERED);});
- it('rejeita opção inventada sem preencher parcialmente',()=>expect(()=>applyExtraction({L:'999 contatos'})).toThrow());
- it('gera null explícito para campos ausentes, preservando aberto',()=>{const a=generationAnswers({L:UNANSWERED,al1:OPEN,al1_aberto:'12'});expect(a['L']?.resposta).toBeNull();expect(a['L']?.estado).toBe('não informado');expect(a['al1']?.resposta).toBe('12');expect(a['site']?.resposta).toBeNull();});
  it('distingue todos os estados de pergunta',()=>{expect(answerState({},'L')).toBe('em branco');expect(answerState({L:'Até 50'},'L')).toBe('respondida por opção');expect(answerState({L:OPEN},'L')).toBe('resposta aberta');expect(answerState({L:UNANSWERED},'L')).toBe('cliente não respondeu');});
- it('bloqueia URLs privadas e redirects fora dos serviços de transcrição',()=>{for(const s of ['http://docs.google.com','https://127.0.0.1','https://docs.google.com.evil.test','https://user:pass@docs.google.com','https://accounts.google.com'])expect(allowedTranscriptUrl(s)).toBeNull();expect(allowedTranscriptUrl('https://docs.google.com/document/d/abc/edit')?.hostname).toBe('docs.google.com');});
 });

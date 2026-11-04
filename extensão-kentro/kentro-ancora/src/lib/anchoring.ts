@@ -43,12 +43,37 @@ export function clientFacts(a: Answers): string[] {
   return out.map(s => s.charAt(0).toUpperCase() + s.slice(1));
 }
 
-export function bulletsOf(a: Answers): string[] { const b = a['bullets_fechamento']; return Array.isArray(b) ? b : []; }
+const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const MOTIVO_DO_PRAZO: Record<string, string> = {
+  'Agora/esta semana': 'Você disse que quer resolver isso agora: dá para começar esta semana.',
+  'Até 30 dias': 'Para resolver em até 30 dias, a decisão precisa acontecer agora.',
+};
+const MOTIVO_DO_NUMERO: Record<string, string> = {
+  'Já tivemos bloqueio': 'Outro bloqueio de número pode parar o atendimento de novo.',
+  'Celular pessoal': 'Número em celular pessoal deixa a operação exposta a bloqueio.',
+  'Os dois': 'Celular pessoal e histórico de bloqueio: o risco de parar é real.',
+};
+/** Motivos de fechamento, só com o que veio da ficha e da conta (3 a 5 frases curtas). */
+export function closingBullets(a: Answers, conta: Pick<Account, 'prudente' | 'multiplo' | 'payback'>): string[] {
+  const t = (id: string) => { if (isUnknown(a, id)) return ''; const v = answerText(a, id); return Array.isArray(v) ? '' : v.trim(); };
+  const out: string[] = [];
+  if (conta.prudente > 0) out.push(`Cada mês de espera custa cerca de ${brl(conta.prudente)}, na conta conservadora.`);
+  if (conta.multiplo !== null && conta.multiplo >= 1) out.push(`O ganho estimado é ${conta.multiplo.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} vezes a mensalidade.`);
+  if (conta.payback !== null && conta.payback <= 365) out.push(`O investimento se paga em cerca de ${Math.max(1, Math.round(conta.payback))} dias.`);
+  const prazo = MOTIVO_DO_PRAZO[t('prazo')]; if (prazo) out.push(prazo);
+  const numero = MOTIVO_DO_NUMERO[t('al8')]; if (numero) out.push(numero);
+  const dores = answerText(a, 'dores');
+  const dor = !isUnknown(a, 'dores') ? (Array.isArray(dores) ? dores[0] : dores) : '';
+  if (dor) out.push(`Sem decidir, continua o problema: ${dor.replace(/ \(.*\)$/, '').toLowerCase()}.`);
+  const meta = t('meta90');
+  if (meta && meta !== 'Outro') out.push(`Sua meta de 90 dias depende de começar agora: ${meta.toLowerCase()}.`);
+  return out.slice(0, 5).map((b) => b.slice(0, 280));
+}
 
 /** Dados da ancoragem que podem ir ao link público do cliente (sem pacote do closer). */
 export function anchoringPayload(a: Answers, conta: Account) {
   const plan = chosenPlan(a); const users = defaultUsers(a); const v = planValues(users, plan);
-  return { fatos: clientFacts(a), plano: plan, usuarios: users, mensalidade: v.mensal, prudente: conta.prudente, ganho: conta.ganho, alavancas: conta.alavancas.filter(l => l.soma && l.valor !== null && l.valor > 0).map(l => ({ nome: l.nome, valor: l.valor ?? 0 })), bullets: bulletsOf(a) };
+  return { fatos: clientFacts(a), plano: plan, usuarios: users, mensalidade: v.mensal, prudente: conta.prudente, ganho: conta.ganho, alavancas: conta.alavancas.filter(l => l.soma && l.valor !== null && l.valor > 0).map(l => ({ nome: l.nome, valor: l.valor ?? 0 })), bullets: closingBullets(a, conta) };
 }
 export type AnchoringData = ReturnType<typeof anchoringPayload>;
 

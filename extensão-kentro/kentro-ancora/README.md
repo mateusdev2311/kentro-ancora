@@ -2,7 +2,7 @@
 
 Venda consultiva da Kentro: diagnóstico, conta ao vivo, planos, relatório de decisão e proposta para o cliente. Usada pelo comercial dentro da Kentro, por uma extensão, e hospedada no Doca.
 
-- **Stack:** TanStack Start (React + server functions), Postgres, Anthropic e OpenAI.
+- **Stack:** TanStack Start (React + server functions) e Postgres. Sem IA.
 - **Implantação e operação:** [docs/implantacao.md](docs/implantacao.md).
 
 ```sh

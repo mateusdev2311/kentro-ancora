@@ -5,14 +5,16 @@ Kentro (navegador do comercial)                Doca (este serviço, HTTPS)
 ┌───────────────────────────────┐ omni.http   ┌─────────────────────────────────┐
 │ Extensão: botão "Âncora" e    │────────────▶│ /api/kentro/ticket (com a chave)│
 │ cartão do atendimento         │             │                                 │
-└──────────────┬────────────────┘             │ App React + server functions    │──▶ Anthropic (geração)
-    openEmbed  │ URL com ticket de uso único  │ Postgres do Doca                │──▶ OpenAI (transcrição)
+└──────────────┬────────────────┘             │ App React + server functions    │
+    openEmbed  │ URL com ticket de uso único  │ Postgres do Doca                │
 ┌──────────────▼────────────────┐   HTTPS     │                                 │
 │ Diálogo com o app             │────────────▶│ /entrar troca o ticket por      │
 └───────────────────────────────┘             │ uma sessão de 12 horas          │
 Cliente: /c/:id e /conta/:id  ───────────────▶│ (públicos, pelo UUID exato)     │
                                               └─────────────────────────────────┘
 ```
+
+O sistema não usa IA. A conta, o relatório e a proposta saem do cálculo, e os textos da venda saem de modelos preenchidos com a ficha ([src/lib/venda-textos.ts](../src/lib/venda-textos.ts)).
 
 ## 1. Antes do primeiro deploy
 
@@ -38,8 +40,6 @@ Variáveis (modelo em [.env.example](../.env.example)):
 | `URL_PUBLICA` | `https://kentro-ancora.kentro.com.br` |
 | `CHAVE_EXTENSAO` | Gere: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
 | `SEGREDO_SESSAO` | Gere outro valor com o mesmo comando |
-| `ANTHROPIC_API_KEY` | Chave da Anthropic |
-| `OPENAI_API_KEY` | Chave da OpenAI |
 
 As tabelas são criadas na primeira subida. Confira em `GET /saude`: deve responder `{"ok":true,"banco":true}`.
 
@@ -73,15 +73,21 @@ Na Kentro, com o usuário de teste:
 
 1. Clique em **Âncora** no menu do topo: o app abre no diálogo, já conectado.
 2. Preencha uma ficha de teste e recarregue: o rascunho volta.
-3. Gere a venda com IA e abra o link do cliente numa janela anônima.
+3. Clique em **Gerar venda ancorada** e abra o link do cliente numa janela anônima.
 4. Escolha um plano e gere a proposta.
 5. Dentro do diálogo, teste **Baixar PDF**, **Apresentar** (tela cheia) e copiar link. Se a Kentro bloquear algum, use o botão de **nova aba** (seta no topo): a aba abre conectada e sem essas limitações.
 6. Abra um atendimento e use o cartão **Abrir ficha ÂNCORA**: numa ficha vazia, o nome do contato já vem preenchido.
 
+## Manter os textos da venda
+
+Os argumentos, as objeções e as janelas de negociação estão em [src/lib/venda-textos.ts](../src/lib/venda-textos.ts); os motivos de fechamento, em `closingBullets`, no arquivo [src/lib/anchoring.ts](../src/lib/anchoring.ts). Mudou preço de add-on, janela ou argumento? Altere ali. Os preços dos planos vêm de [src/lib/pricing.ts](../src/lib/pricing.ts).
+
+Ficha já salva guarda o texto da época; ele só é refeito quando o plano é confirmado de novo nela.
+
 ## Limites conhecidos
 
 - **Identidade:** o SDK da Kentro não dá prova assinada do usuário, e a chave da instalação chega ao navegador de quem recebe a extensão. Alguém com conhecimento técnico e essa chave poderia se passar por outro usuário e ver as fichas dele. Se a chave vazar, troque `CHAVE_EXTENSAO` e a chave da instalação.
-- **Geração interrompida:** a geração roda no processo do serviço. Um reinício no meio dela perde a geração, e a tela avisa para tentar de novo.
+- **Transcrição:** fica guardada na ficha como referência (texto ou link). Ela não preenche as respostas.
 - **Links públicos:** quem tiver o UUID lê a proposta ou a conta ao vivo. Eles não expiram.
 
 ## Desenvolvimento
@@ -90,4 +96,3 @@ Na Kentro, com o usuário de teste:
 - `npm run dev`: app na porta 8080 (com as variáveis no `.env`).
 - `npm test`: inclui as regras de acesso num Postgres real.
 - `npm run build` e `npm start`: como o Doca executa.
-- Para trocar de modelo sem mudar o código: `IA_MODELO_GERACAO` e `IA_MODELO_TRANSCRICAO`.
