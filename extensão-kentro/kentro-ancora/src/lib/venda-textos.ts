@@ -110,6 +110,8 @@ function montarPacote(a: Answers, conta: Account, p: Precos): string {
   b.push(`# Pacote do closer · ${cliente}`, '', '_Uso interno. Não envie este texto ao cliente._', '');
 
   b.push('## 1. Ficha de diagnóstico', '');
+  const crm = texto(a, 'crm_oportunidade');
+  if (crm) b.push(`- **Oportunidade no CRM:** #${crm}${texto(a, 'crm_oportunidade_titulo') ? ` · ${texto(a, 'crm_oportunidade_titulo')}` : ''}`);
   b.push(`- **Nicho:** ${ou(texto(a, 'nicho'))}`, `- **Cidade:** ${ou(texto(a, 'cidade'))}`, `- **Quem decide:** ${ou(texto(a, 'decisor'))}`, `- **Prazo:** ${ou(texto(a, 'prazo'))}`, `- **Meta em 90 dias:** ${ou(texto(a, 'meta90'))}`, '');
   if (fatos.length) b.push('**O que o cliente contou:**', '', ...fatos.map((f) => `- ${f}`), '');
   b.push(dores.length ? '**Dores confirmadas:**' : '**Dores confirmadas:** a confirmar.', '', ...dores.map((d) => `- ${d}`), '');

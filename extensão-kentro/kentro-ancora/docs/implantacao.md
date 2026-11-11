@@ -39,6 +39,11 @@ Variáveis (modelo em [.env.example](../.env.example)):
 | `DATABASE_URL` | Do banco do Doca |
 | `URL_PUBLICA` | `https://kentro-ancora.kentro.com.br` |
 | `SEGREDO_SESSAO` | Gere: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
+| `KENTRO_API_KEY` | Chave da API de integração da Kentro (da fila abaixo). Liga a busca de oportunidades |
+| `KENTRO_FILA_ID` | `357` |
+| `KENTRO_FUNIL_VENDAS` | Opcional. Padrão `6`, o funil [2] Vendas |
+
+A busca de oportunidades só lê o funil Vendas: a lista de abertas fica 1 minuto em memória e o serviço filtra por nome, empresa, cidade, telefone ou e-mail. Sem `KENTRO_API_KEY` e `KENTRO_FILA_ID`, a ficha funciona normalmente, sem o cartão da busca.
 
 As tabelas são criadas na primeira subida. Confira em `GET /saude`: deve responder `{"ok":true,"banco":true}`.
 
